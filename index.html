@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Management Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.0.2/firebase-app-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.0.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9fafb;
+      color: #111;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .dark-mode {
+      background-color: #2a2a2a;
+      color: #f9fafb;
+    }
+
+    header {
+      background-color: #2563eb;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Stylized Dark Mode Toggle Button */
+    #dark-mode-toggle {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      outline: none;
+    }
+
+    /* Dark Mode Button Styling */
+    body.dark-mode #dark-mode-toggle {
+      background-color: #444;
+      color: #f9fafb;
+    }
+
+    /* Hover Effect */
+    #dark-mode-toggle:hover {
+      background-color: #1e40af;
+      transform: scale(1.05);
+    }
+
+    /* Focus Effect */
+    #dark-mode-toggle:focus {
+      box-shadow: 0 0 0 2px #2563eb;
+    }
+
+    .dashboard-stats {
+      display: flex;
+      gap: 2rem;
+      padding: 2rem;
+      justify-content: space-between;
+    }
+
+    .stat-card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      width: 20%;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode .stat-card {
+      background-color: #444;
+    }
+
+    .charts-container {
+      display: flex;
+      gap: 2rem;
+      padding: 2rem;
+    }
+
+    .chart-card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      flex: 1;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode .chart-card {
+      background-color: #444;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    canvas {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Project Management Dashboard</h1>
+    <button id="dark-mode-toggle">Toggle Dark Mode</button>
+  </header>
+
+  <main>
+    <div class="dashboard-stats">
+      <div class="stat-card">
+        <h3>Total Projects</h3>
+        <div id="total-projects">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Completed</h3>
+        <div id="completed-projects">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Ongoing</h3>
+        <div id="ongoing-projects">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Delayed</h3>
+        <div id="delayed-projects">0</div>
+      </div>
+    </div>
+
+    <div class="charts-container">
+      <div class="chart-card">
+        <h3>Project Progress</h3>
+        <canvas id="chart-progress"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Resource Allocation</h3>
+        <canvas id="chart-resources"></canvas>
+      </div>
+    </div>
+  </main>
+
+  <div class="loading-overlay" id="loading-overlay" style="display: none;">Loading...</div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyARbW2lDKcZucJbo8lrwARvgax4Cy0NfuA",
+      authDomain: "naaaabruh-ad282.firebaseapp.com",
+      projectId: "naaaabruh-ad282",
+      storageBucket: "naaaabruh-ad282.appspot.com",
+      messagingSenderId: "555946191902",
+      appId: "1:555946191902:web:01ef40fb4e42acdf88120f",
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const darkModeToggle = document.getElementById("dark-mode-toggle");
+    const body = document.body;
+
+    let isDarkMode = localStorage.getItem("dark-mode") === "true";
+    if (isDarkMode) {
+      body.classList.add("dark-mode");
+    }
+
+    darkModeToggle.addEventListener("click", () => {
+      isDarkMode = !isDarkMode;
+      localStorage.setItem("dark-mode", isDarkMode);
+      body.classList.toggle("dark-mode");
+    });
+
+    const getProjectsData = async () => {
+      const loadingOverlay = document.getElementById("loading-overlay");
+      loadingOverlay.style.display = "flex";
+
+      try {
+        const snapshot = await db.collection("projects").get();
+        const projects = snapshot.docs.map(doc => doc.data());
+
+        let total = projects.length;
+        let completed = 0;
+        let ongoing = 0;
+        let delayed = 0;
+        let progressLabels = [];
+        let progressData = [];
+
+        projects.forEach(project => {
+          if (project.status === "completed") completed++;
+          else if (project.status === "ongoing") ongoing++;
+          else if (project.status === "delayed") delayed++;
+
+          progressLabels.push(project.name);
+          progressData.push(project.progress || 0);
+        });
+
+        document.getElementById("total-projects").textContent = total;
+        document.getElementById("completed-projects").textContent = completed;
+        document.getElementById("ongoing-projects").textContent = ongoing;
+        document.getElementById("delayed-projects").textContent = delayed;
+
+        renderProgressChart(progressLabels, progressData);
+        renderResourceChart(projects);
+
+        loadingOverlay.style.display = "none";
+      } catch (error) {
+        console.error("Error fetching project data:", error);
+        loadingOverlay.style.display = "none";
+      }
+    };
+
+    const renderProgressChart = (labels, data) => {
+      const ctx = document.getElementById("chart-progress").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Progress (%)",
+            data: data,
+            backgroundColor: "#2563eb",
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    };
+
+    const renderResourceChart = (projects) => {
+      const resources = {};
+      const projectColors = {};
+      const projectResourceMap = {};
+
+      projects.forEach(project => {
+        project.resources?.forEach(resource => {
+          resources[resource] = (resources[resource] || 0) + 1;
+          projectResourceMap[resource] = project.name;
+
+          if (!projectColors[project.name]) {
+            projectColors[project.name] = getRandomColor();
+          }
+        });
+      });
+
+      const resourceLabels = Object.keys(resources).map(resource => `${resource} (${projectResourceMap[resource]})`);
+      const resourceColors = Object.keys(resources).map(resource => projectColors[projectResourceMap[resource]]);
+
+      const ctx = document.getElementById("chart-resources").getContext("2d");
+      new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: resourceLabels,
+          datasets: [{
+            data: Object.values(resources),
+            backgroundColor: resourceColors,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "top",
+            }
+          }
+        }
+      });
+    };
+
+    const getRandomColor = () => {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    };
+
+    getProjectsData();
+  </script>
+</body>
+</html>
