@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project Management Dashboard</title>
+  <title>Enhanced Project Management Dashboard</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -11,95 +11,140 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.0.2/firebase-firestore-compat.js"></script>
 
   <style>
+    
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Project Management Dashboard</h1>
+    <div class="header-controls">
+      <button class="button" id="refresh-data">
+        <svg width=":root {
+      --primary-color: #2563eb;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --bg-primary: #f9fafb;
+      --bg-secondary: #ffffff;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .dark-mode {
+      --primary-color: #3b82f6;
+      --text-primary: #f9fafb;
+      --text-secondary: #d1d5db;
+      --bg-primary: #1f2937;
+      --bg-secondary: #374151;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+    }
+
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f9fafb;
-      color: #111;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
       transition: background-color 0.3s, color 0.3s;
     }
 
-    .dark-mode {
-      background-color: #2a2a2a;
-      color: #f9fafb;
-    }
-
     header {
-      background-color: #2563eb;
-      color: white;
+      background-color: var(--primary-color);
       padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: var(--shadow);
     }
 
-    /* Stylized Dark Mode Toggle Button */
-    #dark-mode-toggle {
-      background-color: #2563eb;
-      color: white;
+    .header-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .button {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
       border: none;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-radius: 30px;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
       cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.3s ease;
-      outline: none;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    /* Dark Mode Button Styling */
-    body.dark-mode #dark-mode-toggle {
-      background-color: #444;
-      color: #f9fafb;
-    }
-
-    /* Hover Effect */
-    #dark-mode-toggle:hover {
-      background-color: #1e40af;
-      transform: scale(1.05);
-    }
-
-    /* Focus Effect */
-    #dark-mode-toggle:focus {
-      box-shadow: 0 0 0 2px #2563eb;
+    .button:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
     }
 
     .dashboard-stats {
-      display: flex;
-      gap: 2rem;
-      padding: 2rem;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      padding: 1.5rem;
     }
 
     .stat-card {
-      background-color: #fff;
-      border-radius: 8px;
+      background-color: var(--bg-secondary);
+      border-radius: 1rem;
       padding: 1.5rem;
-      width: 20%;
-      text-align: center;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--shadow);
+      transition: transform 0.2s;
     }
 
-    .dark-mode .stat-card {
-      background-color: #444;
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 600;
+      margin: 0.5rem 0;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .progress-indicator {
+      height: 4px;
+      background-color: #e5e7eb;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s;
     }
 
     .charts-container {
-      display: flex;
-      gap: 2rem;
-      padding: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      padding: 1.5rem;
     }
 
     .chart-card {
-      background-color: #fff;
-      border-radius: 8px;
+      background-color: var(--bg-secondary);
+      border-radius: 1rem;
       padding: 1.5rem;
-      flex: 1;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--shadow);
     }
 
-    .dark-mode .chart-card {
-      background-color: #444;
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
     }
 
     .loading-overlay {
@@ -108,199 +153,328 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
+      background: rgba(0, 0, 0, 0.7);
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 10;
+      z-index: 1000;
     }
 
-    canvas {
-      max-width: 100%;
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 5px solid var(--bg-secondary);
+      border-bottom-color: var(--primary-color);
+      border-radius: 50%;
+      animation: rotation 1s linear infinite;
     }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Project Management Dashboard</h1>
-    <button id="dark-mode-toggle">Toggle Dark Mode</button>
+
+    @keyframes rotation {
+      0% { transform: rotate(0deg) }
+      100% { transform: rotate(360deg) }
+    }
+
+    .filters {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      background-color: var(--bg-secondary);
+      margin: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    select {
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      border: 1px solid var(--text-secondary);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .project-list {
+      margin: 1.5rem;
+      background-color: var(--bg-secondary);
+      border-radius: 1rem;
+      box-shadow: var(--shadow);
+      overflow-y: auto;
+      max-height: 400px;
+    }
+
+    .project-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      padding: 1rem;
+      border-bottom: 1px solid var(--text-secondary);
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .project-item:last-child {
+      border-bottom: none;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .status-completed { background-color: var(--success-color); color: white; }
+    .status-ongoing { background-color: var(--warning-color); color: white; }
+    .status-delayed { background-color: var(--danger-color); color: white; }20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12a9 9 0 11-9-9c2.52 0 4.85.99 6.57 2.57L21 8M21 3v5h-5"/>
+        </svg>
+        Refresh Data
+      </button>
+      <button class="button" id="dark-mode-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+        Toggle Theme
+      </button>
+    </div>
   </header>
 
-  <main>
-    <div class="dashboard-stats">
-      <div class="stat-card">
-        <h3>Total Projects</h3>
-        <div id="total-projects">0</div>
-      </div>
-      <div class="stat-card">
-        <h3>Completed</h3>
-        <div id="completed-projects">0</div>
-      </div>
-      <div class="stat-card">
-        <h3>Ongoing</h3>
-        <div id="ongoing-projects">0</div>
-      </div>
-      <div class="stat-card">
-        <h3>Delayed</h3>
-        <div id="delayed-projects">0</div>
-      </div>
-    </div>
+  <div class="filters">
+    <select id="status-filter">
+      <option value="all">All Statuses</option>
+      <option value="completed">Completed</option>
+      <option value="ongoing">Ongoing</option>
+      <option value="delayed">Delayed</option>
+    </select>
+    <select id="sort-by">
+      <option value="name">Sort by Name</option>
+      <option value="progress">Sort by Progress</option>
+      <option value="status">Sort by Status</option>
+    </select>
+  </div>
 
-    <div class="charts-container">
-      <div class="chart-card">
+  <div class="dashboard-stats">
+    <div class="stat-card">
+      <div class="stat-label">Total Projects</div>
+      <div class="stat-value" id="total-projects">Loading...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ongoing Projects</div>
+      <div class="stat-value" id="ongoing-projects">Loading...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Completed Projects</div>
+      <div class="stat-value" id="completed-projects">Loading...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Delayed Projects</div>
+      <div class="stat-value" id="delayed-projects">Loading...</div>
+    </div>
+  </div>
+
+  <div class="charts-container">
+    <div class="chart-card">
+      <div class="chart-header">
         <h3>Project Progress</h3>
-        <canvas id="chart-progress"></canvas>
       </div>
-      <div class="chart-card">
-        <h3>Resource Allocation</h3>
-        <canvas id="chart-resources"></canvas>
-      </div>
+      <canvas id="progressChart"></canvas>
     </div>
-  </main>
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Resource Allocation</h3>
+      </div>
+      <canvas id="resourceChart"></canvas>
+    </div>
+  </div>
 
-  <div class="loading-overlay" id="loading-overlay" style="display: none;">Loading...</div>
+  <div class="loading-overlay" id="loading-overlay" style="display: none;">
+    <div class="loader"></div>
+  </div>
+
+  <div class="project-list" id="project-list">
+    <!-- Project items will be populated here -->
+  </div>
 
   <script>
+    // Firebase setup
     const firebaseConfig = {
       apiKey: "AIzaSyARbW2lDKcZucJbo8lrwARvgax4Cy0NfuA",
       authDomain: "naaaabruh-ad282.firebaseapp.com",
       projectId: "naaaabruh-ad282",
-      storageBucket: "naaaabruh-ad282.appspot.com",
+      storageBucket: "naaaabruh-ad282.firebasestorage.app",
       messagingSenderId: "555946191902",
       appId: "1:555946191902:web:01ef40fb4e42acdf88120f",
+      measurementId: "G-WWNFXHJ4XX"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
+
+    // Utility function to fetch projects data
+    const fetchProjectsData = async () => {
+      const projectsRef = db.collection('projects');
+      const snapshot = await projectsRef.get();
+      const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return projects;
     };
 
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // Handle project data display
+    const displayProjects = (projects) => {
+      const projectListElement = document.getElementById('project-list');
+      projectListElement.innerHTML = '';
+      projects.forEach(project => {
+        const projectItem = document.createElement('div');
+        projectItem.classList.add('project-item');
+        projectItem.innerHTML = `
+          <div>${project.name}</div>
+          <div>${project.progress}%</div>
+          <div class="status-badge ${getStatusClass(project.status)}">${project.status}</div>
+        `;
+        projectListElement.appendChild(projectItem);
+      });
+    };
 
-    const darkModeToggle = document.getElementById("dark-mode-toggle");
-    const body = document.body;
+    // Get status class for badge
+    const getStatusClass = (status) => {
+      switch (status) {
+        case 'completed': return 'status-completed';
+        case 'ongoing': return 'status-ongoing';
+        case 'delayed': return 'status-delayed';
+        default: return '';
+      }
+    };
 
-    let isDarkMode = localStorage.getItem("dark-mode") === "true";
-    if (isDarkMode) {
-      body.classList.add("dark-mode");
-    }
+    // Update statistics dynamically
+    const updateStats = (projects) => {
+      const totalProjects = projects.length;
+      const ongoingProjects = projects.filter(p => p.status === 'ongoing').length;
+      const completedProjects = projects.filter(p => p.status === 'completed').length;
+      const delayedProjects = projects.filter(p => p.status === 'delayed').length;
 
-    darkModeToggle.addEventListener("click", () => {
-      isDarkMode = !isDarkMode;
-      localStorage.setItem("dark-mode", isDarkMode);
-      body.classList.toggle("dark-mode");
+      document.getElementById('total-projects').textContent = totalProjects;
+      document.getElementById('ongoing-projects').textContent = ongoingProjects;
+      document.getElementById('completed-projects').textContent = completedProjects;
+      document.getElementById('delayed-projects').textContent = delayedProjects;
+    };
+
+    // Update chart data
+    const updateCharts = (projects) => {
+      const progressData = projects.map(p => p.progress);
+      const resourceData = projects.map(p => p.resourcesAllocated);
+
+      // Update progress chart
+      const progressCtx = document.getElementById('progressChart').getContext('2d');
+      new Chart(progressCtx, {
+        type: 'bar',
+        data: {
+          labels: projects.map(p => p.name),
+          datasets: [{
+            label: 'Progress',
+            data: progressData,
+            backgroundColor: 'rgba(37, 99, 235, 0.5)',
+            borderColor: 'rgba(37, 99, 235, 1)',
+            borderWidth: 1
+          }]
+        }
+      });
+
+      // Update resource allocation chart
+      const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+      const resourceLabels = projects.reduce((acc, project) => {
+        project.resources.forEach(resource => {
+          if (!acc[resource]) acc[resource] = 0;
+          acc[resource]++;
+        });
+        return acc;
+      }, {});
+      const resourceNames = Object.keys(resourceLabels);
+      const resourceCounts = Object.values(resourceLabels);
+
+      new Chart(resourceCtx, {
+        type: 'pie',
+        data: {
+          labels: resourceNames,
+          datasets: [{
+            data: resourceCounts,
+            backgroundColor: ['#2563eb', '#10b981', '#ef4444', '#f59e0b'],
+          }]
+        }
+      });
+    };
+
+    // Filter and sort projects
+    const filterAndSortProjects = (projects, filterStatus, sortBy) => {
+      let filteredProjects = filterStatus === 'all' ? projects : projects.filter(p => p.status === filterStatus);
+      switch (sortBy) {
+        case 'name':
+          filteredProjects = filteredProjects.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+        case 'progress':
+          filteredProjects = filteredProjects.sort((a, b) => a.progress - b.progress);
+          break;
+          case 'status':
+          filteredProjects = filteredProjects.sort((a, b) => a.status.localeCompare(b.status));
+          break;
+      }
+      return filteredProjects;
+    };
+
+    // Event listeners
+    document.getElementById('refresh-data').addEventListener('click', async () => {
+      const loadingOverlay = document.getElementById('loading-overlay');
+      loadingOverlay.style.display = 'flex';
+      
+      try {
+        const projects = await fetchProjectsData();
+        const filterStatus = document.getElementById('status-filter').value;
+        const sortBy = document.getElementById('sort-by').value;
+        const filteredProjects = filterAndSortProjects(projects, filterStatus, sortBy);
+        displayProjects(filteredProjects);
+        updateStats(filteredProjects);
+        updateCharts(filteredProjects);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        loadingOverlay.style.display = 'none';
+      }
     });
 
-    const getProjectsData = async () => {
-      const loadingOverlay = document.getElementById("loading-overlay");
-      loadingOverlay.style.display = "flex";
+    // Dark mode toggle
+    document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
 
+    // Filter and sort change handlers
+    document.getElementById('status-filter').addEventListener('change', async () => {
+      const projects = await fetchProjectsData();
+      const filterStatus = document.getElementById('status-filter').value;
+      const sortBy = document.getElementById('sort-by').value;
+      const filteredProjects = filterAndSortProjects(projects, filterStatus, sortBy);
+      displayProjects(filteredProjects);
+      updateStats(filteredProjects);
+    });
+
+    document.getElementById('sort-by').addEventListener('change', async () => {
+      const projects = await fetchProjectsData();
+      const filterStatus = document.getElementById('status-filter').value;
+      const sortBy = document.getElementById('sort-by').value;
+      const filteredProjects = filterAndSortProjects(projects, filterStatus, sortBy);
+      displayProjects(filteredProjects);
+    });
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', async () => {
+      const loadingOverlay = document.getElementById('loading-overlay');
+      loadingOverlay.style.display = 'flex';
+      
       try {
-        const snapshot = await db.collection("projects").get();
-        const projects = snapshot.docs.map(doc => doc.data());
-
-        let total = projects.length;
-        let completed = 0;
-        let ongoing = 0;
-        let delayed = 0;
-        let progressLabels = [];
-        let progressData = [];
-
-        projects.forEach(project => {
-          if (project.status === "completed") completed++;
-          else if (project.status === "ongoing") ongoing++;
-          else if (project.status === "delayed") delayed++;
-
-          progressLabels.push(project.name);
-          progressData.push(project.progress || 0);
-        });
-
-        document.getElementById("total-projects").textContent = total;
-        document.getElementById("completed-projects").textContent = completed;
-        document.getElementById("ongoing-projects").textContent = ongoing;
-        document.getElementById("delayed-projects").textContent = delayed;
-
-        renderProgressChart(progressLabels, progressData);
-        renderResourceChart(projects);
-
-        loadingOverlay.style.display = "none";
+        const projects = await fetchProjectsData();
+        displayProjects(projects);
+        updateStats(projects);
+        updateCharts(projects);
       } catch (error) {
-        console.error("Error fetching project data:", error);
-        loadingOverlay.style.display = "none";
+        console.error('Error loading initial data:', error);
+      } finally {
+        loadingOverlay.style.display = 'none';
       }
-    };
-
-    const renderProgressChart = (labels, data) => {
-      const ctx = document.getElementById("chart-progress").getContext("2d");
-      new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: labels,
-          datasets: [{
-            label: "Progress (%)",
-            data: data,
-            backgroundColor: "#2563eb",
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100
-            }
-          }
-        }
-      });
-    };
-
-    const renderResourceChart = (projects) => {
-      const resources = {};
-      const projectColors = {};
-      const projectResourceMap = {};
-
-      projects.forEach(project => {
-        project.resources?.forEach(resource => {
-          resources[resource] = (resources[resource] || 0) + 1;
-          projectResourceMap[resource] = project.name;
-
-          if (!projectColors[project.name]) {
-            projectColors[project.name] = getRandomColor();
-          }
-        });
-      });
-
-      const resourceLabels = Object.keys(resources).map(resource => `${resource} (${projectResourceMap[resource]})`);
-      const resourceColors = Object.keys(resources).map(resource => projectColors[projectResourceMap[resource]]);
-
-      const ctx = document.getElementById("chart-resources").getContext("2d");
-      new Chart(ctx, {
-        type: "pie",
-        data: {
-          labels: resourceLabels,
-          datasets: [{
-            data: Object.values(resources),
-            backgroundColor: resourceColors,
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: "top",
-            }
-          }
-        }
-      });
-    };
-
-    const getRandomColor = () => {
-      const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
-    };
-
-    getProjectsData();
+    });
   </script>
 </body>
 </html>
