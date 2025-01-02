@@ -11,15 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.0.2/firebase-firestore-compat.js"></script>
 
   <style>
-    
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Project Management Dashboard</h1>
-    <div class="header-controls">
-      <button class="button" id="refresh-data">
-        <svg width=":root {
+    :root {
       --primary-color: #2563eb;
       --success-color: #10b981;
       --warning-color: #f59e0b;
@@ -223,7 +215,15 @@
 
     .status-completed { background-color: var(--success-color); color: white; }
     .status-ongoing { background-color: var(--warning-color); color: white; }
-    .status-delayed { background-color: var(--danger-color); color: white; }20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    .status-delayed { background-color: var(--danger-color); color: white; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Project Management Dashboard</h1>
+    <div class="header-controls">
+      <button class="button" id="refresh-data">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 12a9 9 0 11-9-9c2.52 0 4.85.99 6.57 2.57L21 8M21 3v5h-5"/>
         </svg>
         Refresh Data
